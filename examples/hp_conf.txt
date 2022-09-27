@@ -1,0 +1,6 @@
+dim	42
+sigma	3
+lr	0.4499
+neigh_f	gaussian
+dist_f	manhattan
+topology	hexagonal
