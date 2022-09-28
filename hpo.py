@@ -265,3 +265,4 @@ def best_config(cfg_file):
         cfg_score = pickle.load(f)
     tmp = max(cfg_score, key=itemgetter(1))
     print("Best configuration was \n{}\n with a score of {}\n\n".format(tmp[0], tmp[1]))
+    return tmp[0]

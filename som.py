@@ -120,7 +120,7 @@ def train_som(embedding_file, hp_conf, label,
     som.train(x, num_iteration=len(x), random_order=True, verbose=False)
     neurons = som.get_weights()
     end_time = time.time()
-    print("Time: {}".format(round(end_time - start_time, 2)))
+    print(" Time: {}".format(round(end_time - start_time, 2)))
 
     if dump_som_file:
         with open(dump_som_file, 'wb') as f:
@@ -262,15 +262,15 @@ def evaluate_performance(n_clusters, hp_conf, labels_pred, ground_truth_file,
     with open(ground_truth_file, 'rb') as f:
         ground_truth = pickle.load(f)
     fms = fowlkes_mallows_score(ground_truth, signal_clusters)
-    print("Fowlkes-Mallows score: {}".format(fms))
+    print(" Fowlkes-Mallows score: {}".format(fms))
     ars = adjusted_rand_score(ground_truth, signal_clusters)
-    print("Adjusted Rand score: {}".format(ars))
+    print(" Adjusted Rand score: {}".format(ars))
   
     return ars, fms
 
 
 def train_and_evaluate(hyperparameter_file, embedding_file, label,
-                       n_clusters, ground_truth_file, label_file=None,
+                       n_clusters, label_file=None,
                        dump_som_file="som.pkl",
                        order_y_file="ordered-y.pkl",
                        weights_file="weights.pkl",
@@ -293,9 +293,6 @@ def train_and_evaluate(hyperparameter_file, embedding_file, label,
         ordered according to the ground_truth.
     n_clusters : int
         number of clusters.
-    ground_truth_file : String
-        a path to a pickle file containing a list where the i-th element is the
-        ground truth cluster of the i-th signal.
     label_file : String or list, optional
         a path or a list of a paths that contain the ground truth of the
         embedding file. Such files has to be stored as pickle files.
@@ -324,6 +321,8 @@ def train_and_evaluate(hyperparameter_file, embedding_file, label,
 
     Returns
     -------
+    labels_pred: list
+        List containing the corresponding cluster for each signal.
     ars : float
         Adjusted Random Score.
     fms : float
@@ -332,12 +331,15 @@ def train_and_evaluate(hyperparameter_file, embedding_file, label,
     '''
     print(" *** Loading Hyper-parameters ***")
     hp_conf = get_hyperparameters(hyperparameter_file)
-    print("Embeddings")
+    print(" *** Training the SOM ***")
     labels_pred = train_som(embedding_file, hp_conf, label, label_file=label_file, dump_som_file=dump_som_file,
                             order_y_file=order_y_file, weights_file=weights_file,
                             map_bmu_signal_file=map_bmu_signal_file, labels_pred_file=labels_pred_file)
-    print("Evaluate performance")
-    ars, fms = evaluate_performance(n_clusters, hp_conf, labels_pred,
-                                    ground_truth_file, weights_file=weights_file)
+    if label_file is not None:
+        print(" *** Evaluating performance ***")
+        ars, fms = evaluate_performance(n_clusters, hp_conf, labels_pred,
+                                        label_file, weights_file=weights_file)
 
-    return ars, fms
+        return labels_pred, ars, fms
+    else:
+        return labels_pred
